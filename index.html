@@ -1,0 +1,1748 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Weekly Planner</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+            background: #f8f9fa;
+            color: #1d1d1f;
+            line-height: 1.5;
+            overflow: hidden;
+        }
+
+        /* Top Bar */
+        .top-bar {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 60px;
+            background: white;
+            border-bottom: 1px solid #e8e8ed;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.06);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 0 20px;
+            z-index: 100;
+        }
+
+        .top-bar-left {
+            display: flex;
+            align-items: center;
+            gap: 16px;
+        }
+
+        .hamburger-btn {
+            width: 40px;
+            height: 40px;
+            background: #f5f5f7;
+            border: none;
+            border-radius: 8px;
+            font-size: 20px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.2s;
+            color: #1d1d1f;
+        }
+
+        .hamburger-btn:hover {
+            background: #e8e8ed;
+        }
+
+        .week-info {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .week-navigation {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .week-nav-btn {
+            width: 32px;
+            height: 32px;
+            border-radius: 6px;
+            background: #f5f5f7;
+            border: none;
+            cursor: pointer;
+            font-size: 14px;
+            transition: all 0.2s;
+            color: #1d1d1f;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .week-nav-btn:hover {
+            background: #e8e8ed;
+        }
+
+        .week-nav-btn:disabled {
+            opacity: 0.3;
+            cursor: not-allowed;
+        }
+
+        .week-selector {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        #weekDropdown {
+            position: absolute;
+            opacity: 0;
+            pointer-events: none;
+        }
+
+        .week-info-text {
+            cursor: pointer;
+            padding: 4px 8px;
+            border-radius: 6px;
+            transition: all 0.2s;
+            font-size: 16px;
+            font-weight: 600;
+            color: #1d1d1f;
+            user-select: none;
+        }
+
+        .week-info-text:hover {
+            background: #f5f5f7;
+        }
+
+        .year-view-btn {
+            width: 32px;
+            height: 32px;
+            border-radius: 6px;
+            background: #f5f5f7;
+            border: none;
+            cursor: pointer;
+            font-size: 16px;
+            transition: all 0.2s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .year-view-btn:hover {
+            background: #e8e8ed;
+        }
+
+        .week-number {
+            font-size: 16px;
+            font-weight: 600;
+            color: #1d1d1f;
+        }
+
+        .week-date-range {
+            font-size: 14px;
+            color: #6e6e73;
+        }
+
+        .top-bar-stats {
+            display: flex;
+            align-items: center;
+            gap: 20px;
+        }
+
+        .top-bar-stat {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            font-size: 14px;
+            color: #6e6e73;
+        }
+
+        .top-bar-stat-icon {
+            font-size: 16px;
+        }
+
+        .top-bar-stat-value {
+            font-weight: 600;
+            color: #1d1d1f;
+        }
+
+        /* Main Content Container */
+        .app-container {
+            display: grid;
+            grid-template-rows: 60px 1fr;
+            height: 100vh;
+        }
+
+        .main-content {
+            display: grid;
+            grid-template-columns: 280px 1fr;
+            margin-top: 60px;
+            height: calc(100vh - 60px);
+            transition: grid-template-columns 0.3s ease;
+        }
+
+        .main-content.collapsed {
+            grid-template-columns: 0px 1fr;
+        }
+
+        /* Left Panel */
+        .left-panel {
+            background: white;
+            border-right: 1px solid #e8e8ed;
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+            transition: all 0.3s ease;
+        }
+
+        .main-content.collapsed .left-panel {
+            width: 0;
+            opacity: 0;
+        }
+
+        .left-panel-content {
+            padding: 20px;
+            overflow-y: auto;
+            flex: 1;
+        }
+
+        .left-panel-content::-webkit-scrollbar {
+            width: 6px;
+        }
+
+        .left-panel-content::-webkit-scrollbar-track {
+            background: #f5f5f7;
+        }
+
+        .left-panel-content::-webkit-scrollbar-thumb {
+            background: #d2d2d7;
+            border-radius: 3px;
+        }
+
+        h2 {
+            font-size: 16px;
+            font-weight: 600;
+            margin-bottom: 16px;
+            color: #1d1d1f;
+        }
+
+        /* Task Form */
+        .task-form {
+            margin-bottom: 24px;
+        }
+
+        .form-group {
+            margin-bottom: 12px;
+        }
+
+        label {
+            display: block;
+            font-size: 12px;
+            font-weight: 500;
+            margin-bottom: 4px;
+            color: #6e6e73;
+        }
+
+        input[type="text"],
+        input[type="number"],
+        select,
+        textarea {
+            width: 100%;
+            padding: 8px 10px;
+            border: 1px solid #d2d2d7;
+            border-radius: 6px;
+            font-size: 13px;
+            font-family: inherit;
+            transition: border-color 0.2s;
+        }
+
+        /* Category Select Styling */
+        select#taskCategory {
+            font-weight: 500;
+        }
+
+        select#taskCategory option {
+            padding: 8px;
+        }
+
+        select#taskCategory option[value="meetings"] {
+            color: #3B82F6;
+        }
+
+        select#taskCategory option[value="planning"] {
+            color: #8B5CF6;
+        }
+
+        select#taskCategory option[value="expo"] {
+            color: #F97316;
+        }
+
+        select#taskCategory option[value="development"] {
+            color: #10B981;
+        }
+
+        select#taskCategory option[value="other"] {
+            color: #6B7280;
+        }
+
+        input[type="text"]:focus,
+        input[type="number"]:focus,
+        select:focus,
+        textarea:focus {
+            outline: none;
+            border-color: #0071e3;
+        }
+
+        textarea {
+            resize: vertical;
+            min-height: 50px;
+        }
+
+        button[type="submit"] {
+            width: 100%;
+            padding: 10px;
+            background: #0071e3;
+            color: white;
+            border: none;
+            border-radius: 6px;
+            font-size: 13px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: background 0.2s;
+        }
+
+        button[type="submit"]:hover {
+            background: #0077ed;
+        }
+
+        button[type="submit"]:active {
+            background: #006edb;
+        }
+
+        /* Task Pool */
+        .task-pool {
+            max-height: calc(100vh - 500px);
+            overflow-y: auto;
+        }
+
+        .task-pool::-webkit-scrollbar {
+            width: 6px;
+        }
+
+        .task-pool::-webkit-scrollbar-track {
+            background: #f5f5f7;
+            border-radius: 3px;
+        }
+
+        .task-pool::-webkit-scrollbar-thumb {
+            background: #d2d2d7;
+            border-radius: 3px;
+        }
+
+        /* Calendar Section */
+        .calendar-section {
+            padding: 16px;
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .calendar-grid {
+            display: grid;
+            grid-template-columns: repeat(5, 1fr);
+            gap: 12px;
+            flex: 1;
+            overflow: hidden;
+        }
+
+        .day-column {
+            background: white;
+            border: 2px solid #e8e8ed;
+            border-radius: 10px;
+            padding: 12px;
+            display: flex;
+            flex-direction: column;
+            min-height: 0;
+            transition: all 0.2s;
+        }
+
+        .day-column.drag-over {
+            background: #f0f7ff;
+            border-color: #0071e3;
+            box-shadow: 0 0 0 2px rgba(0, 113, 227, 0.1);
+        }
+
+        .day-header {
+            text-align: center;
+            padding-bottom: 10px;
+            border-bottom: 2px solid #f0f0f5;
+            flex-shrink: 0;
+            margin-bottom: 12px;
+        }
+
+        .day-name {
+            font-size: 12px;
+            font-weight: 700;
+            text-transform: uppercase;
+            color: #1d1d1f;
+            letter-spacing: 0.5px;
+        }
+
+        .day-date {
+            font-size: 11px;
+            color: #86868b;
+            margin-top: 2px;
+            font-weight: 500;
+        }
+
+        .day-total {
+            font-size: 13px;
+            color: #0071e3;
+            font-weight: 700;
+            margin-top: 6px;
+        }
+
+        .day-total.warning {
+            color: #ff9500;
+        }
+
+        .day-total.danger {
+            color: #ff3b30;
+        }
+
+        .day-tasks {
+            flex: 1;
+            overflow-y: auto;
+            overflow-x: hidden;
+        }
+
+        .day-tasks::-webkit-scrollbar {
+            width: 4px;
+        }
+
+        .day-tasks::-webkit-scrollbar-track {
+            background: transparent;
+        }
+
+        .day-tasks::-webkit-scrollbar-thumb {
+            background: #d2d2d7;
+            border-radius: 2px;
+        }
+
+        /* Task Card - NEW DESIGN */
+        .task-card {
+            background: white;
+            border-radius: 8px;
+            padding: 12px;
+            margin-bottom: 10px;
+            cursor: move;
+            transition: all 0.2s;
+            position: relative;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.08);
+            border-left: 4px solid #d2d2d7;
+        }
+
+        .task-card:hover {
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.12);
+            transform: translateY(-2px);
+        }
+
+        .task-card.dragging {
+            opacity: 0.5;
+        }
+
+        /* Category colors as left border */
+        .task-card.category-meetings {
+            border-left-color: #3B82F6;
+        }
+
+        .task-card.category-planning {
+            border-left-color: #8B5CF6;
+        }
+
+        .task-card.category-expo {
+            border-left-color: #F97316;
+        }
+
+        .task-card.category-development {
+            border-left-color: #10B981;
+        }
+
+        .task-card.category-other {
+            border-left-color: #6B7280;
+        }
+
+        .task-title {
+            font-size: 14px;
+            font-weight: 600;
+            margin-bottom: 6px;
+            line-height: 1.4;
+            color: #1d1d1f;
+            word-wrap: break-word;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .task-priority-icon {
+            font-size: 12px;
+            flex-shrink: 0;
+        }
+
+        .task-meta {
+            font-size: 11px;
+            color: #86868b;
+            margin-bottom: 8px;
+        }
+
+        /* Task Notes - ALWAYS VISIBLE */
+        .task-notes {
+            font-size: 12px;
+            color: #6e6e73;
+            line-height: 1.5;
+            white-space: pre-wrap;
+            word-wrap: break-word;
+            margin-top: 8px;
+            padding-top: 8px;
+            border-top: 1px solid #f0f0f5;
+        }
+
+        .task-actions {
+            position: absolute;
+            top: 8px;
+            right: 8px;
+            display: flex;
+            gap: 4px;
+            opacity: 0;
+            transition: opacity 0.2s;
+        }
+
+        .task-card:hover .task-actions {
+            opacity: 1;
+        }
+
+        .task-action-btn {
+            width: 22px;
+            height: 22px;
+            padding: 0;
+            background: white;
+            border: 1px solid #e8e8ed;
+            border-radius: 4px;
+            font-size: 14px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.2s;
+            color: #6e6e73;
+        }
+
+        .task-edit-btn:hover {
+            background: #0071e3;
+            border-color: #0071e3;
+            color: white;
+        }
+
+        .task-delete-btn:hover {
+            background: #ff3b30;
+            border-color: #ff3b30;
+            color: white;
+        }
+
+        /* Editable fields */
+        .task-title.editable,
+        .task-notes.editable {
+            cursor: text;
+            padding: 4px;
+            margin: -4px;
+            border-radius: 4px;
+            transition: background 0.2s;
+        }
+
+        .task-title.editable:hover,
+        .task-notes.editable:hover {
+            background: #f5f5f7;
+        }
+
+        .task-title-input,
+        .task-notes-input {
+            width: 100%;
+            border: 2px solid #0071e3;
+            border-radius: 4px;
+            padding: 4px 6px;
+            font-size: inherit;
+            font-weight: inherit;
+            font-family: inherit;
+            color: inherit;
+            line-height: inherit;
+            outline: none;
+            background: white;
+        }
+
+        .task-notes-input {
+            resize: vertical;
+            min-height: 40px;
+            white-space: pre-wrap;
+        }
+
+        .task-edit-hint {
+            font-size: 10px;
+            color: #86868b;
+            font-style: italic;
+            margin-top: 4px;
+        }
+
+        /* Category option with color dots */
+        .category-option {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .category-color-dot {
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            display: inline-block;
+            flex-shrink: 0;
+        }
+
+        /* Empty State */
+        .empty-state {
+            text-align: center;
+            padding: 32px 20px;
+            color: #86868b;
+        }
+
+        .empty-state-icon {
+            font-size: 40px;
+            margin-bottom: 8px;
+            opacity: 0.5;
+        }
+
+        .empty-state-text {
+            font-size: 13px;
+            line-height: 1.5;
+        }
+
+        /* Responsive Design */
+        @media (max-width: 1200px) {
+            .main-content {
+                grid-template-columns: 240px 1fr;
+            }
+
+            .calendar-grid {
+                gap: 10px;
+            }
+        }
+
+        @media (max-width: 960px) {
+            .top-bar-stats {
+                gap: 12px;
+            }
+
+            .top-bar-stat {
+                font-size: 13px;
+            }
+
+            .week-date-range {
+                display: none;
+            }
+
+            .calendar-grid {
+                grid-template-columns: repeat(3, 1fr);
+            }
+        }
+
+        @media (max-width: 600px) {
+            .main-content {
+                grid-template-columns: 1fr;
+            }
+
+            .left-panel {
+                position: fixed;
+                top: 60px;
+                left: 0;
+                bottom: 0;
+                width: 280px;
+                z-index: 90;
+                box-shadow: 2px 0 8px rgba(0, 0, 0, 0.1);
+            }
+
+            .main-content.collapsed .left-panel {
+                transform: translateX(-100%);
+            }
+
+            .calendar-grid {
+                grid-template-columns: repeat(2, 1fr);
+            }
+
+            .top-bar {
+                padding: 0 12px;
+            }
+
+            .top-bar-stat-icon {
+                display: none;
+            }
+        }
+
+        /* Year View Modal */
+        .year-view-modal {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0, 0, 0, 0.5);
+            z-index: 1000;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+            backdrop-filter: blur(4px);
+        }
+
+        .year-view-container {
+            background: white;
+            border-radius: 16px;
+            max-width: 1200px;
+            width: 100%;
+            max-height: 90vh;
+            display: flex;
+            flex-direction: column;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+        }
+
+        .year-view-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 24px;
+            border-bottom: 1px solid #e8e8ed;
+        }
+
+        .year-view-header h2 {
+            font-size: 24px;
+            font-weight: 600;
+            margin: 0;
+        }
+
+        .close-modal-btn {
+            width: 36px;
+            height: 36px;
+            border-radius: 8px;
+            border: none;
+            background: #f5f5f7;
+            font-size: 18px;
+            cursor: pointer;
+            transition: background 0.2s;
+        }
+
+        .close-modal-btn:hover {
+            background: #e8e8ed;
+        }
+
+        .year-view-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(100px, 1fr));
+            gap: 12px;
+            padding: 24px;
+            overflow-y: auto;
+        }
+
+        .week-card {
+            background: white;
+            border: 2px solid #e8e8ed;
+            border-radius: 10px;
+            padding: 12px;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.2s;
+            min-height: 90px;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+        }
+
+        .week-card:hover {
+            border-color: #0071e3;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+            transform: translateY(-2px);
+        }
+
+        .week-card.current-week {
+            border-color: #0071e3;
+            border-width: 3px;
+            background: #f0f7ff;
+        }
+
+        .week-card.completed {
+            background: #f0fdf4;
+            border-color: #10B981;
+        }
+
+        .week-card.empty {
+            opacity: 0.5;
+            border-style: dashed;
+        }
+
+        .week-card-number {
+            font-size: 14px;
+            font-weight: 700;
+            color: #1d1d1f;
+            margin-bottom: 4px;
+        }
+
+        .week-card-hours {
+            font-size: 16px;
+            font-weight: 600;
+            color: #0071e3;
+            margin-bottom: 2px;
+        }
+
+        .week-card-progress {
+            font-size: 11px;
+            color: #6e6e73;
+        }
+
+        .week-card.empty .week-card-hours,
+        .week-card.empty .week-card-progress {
+            display: none;
+        }
+
+        .week-card.empty::after {
+            content: '—';
+            font-size: 20px;
+            color: #d2d2d7;
+        }
+    </style>
+</head>
+<body>
+    <div class="app-container">
+        <!-- Top Bar -->
+        <div class="top-bar">
+            <div class="top-bar-left">
+                <button class="hamburger-btn" id="hamburgerBtn" title="Toggle sidebar">☰</button>
+                <div class="week-navigation">
+                    <button class="week-nav-btn" id="prevWeekBtn" title="Previous week">◀</button>
+                    <div class="week-selector">
+                        <select id="weekDropdown">
+                            <!-- Will be populated by JS -->
+                        </select>
+                        <span class="week-info-text" id="weekInfoText">
+                            <span>Week <span id="topBarWeekNumber"></span> of 52</span>
+                        </span>
+                    </div>
+                    <button class="week-nav-btn" id="nextWeekBtn" title="Next week">▶</button>
+                    <button class="year-view-btn" id="yearViewBtn" title="Year overview">📅</button>
+                </div>
+                <div class="week-info">
+                    <span class="week-date-range" id="topBarWeekRange"></span>
+                </div>
+            </div>
+            <div class="top-bar-stats">
+                <div class="top-bar-stat">
+                    <span class="top-bar-stat-icon">📊</span>
+                    <span class="top-bar-stat-value" id="topBarHours">0h</span>
+                </div>
+                <div class="top-bar-stat">
+                    <span class="top-bar-stat-icon">✓</span>
+                    <span class="top-bar-stat-value" id="topBarProgress">0%</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Main Content -->
+        <div class="main-content" id="mainContent">
+            <!-- Left Panel -->
+            <div class="left-panel">
+                <div class="left-panel-content">
+                    <h2>➕ New Task</h2>
+                    <form class="task-form" id="taskForm">
+                        <div class="form-group">
+                            <label for="taskTitle">Title</label>
+                            <input type="text" id="taskTitle" required placeholder="What needs to be done?">
+                        </div>
+                        <div class="form-group">
+                            <label for="taskCategory">Category</label>
+                            <select id="taskCategory" required>
+                                <option value="meetings">● Meetings</option>
+                                <option value="planning">● Planning</option>
+                                <option value="expo">● Expo</option>
+                                <option value="development">● Development</option>
+                                <option value="other">● Other</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label for="taskEffort">Effort (hours)</label>
+                            <input type="number" id="taskEffort" min="1" max="8" value="1" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="taskPriority">Priority</label>
+                            <select id="taskPriority" required>
+                                <option value="normal">Normal</option>
+                                <option value="high">⚡ High</option>
+                                <option value="done">✓ Done</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label for="taskDescription">Notes</label>
+                            <textarea id="taskDescription" placeholder="Optional details..."></textarea>
+                        </div>
+                        <button type="submit">Add Task</button>
+                    </form>
+
+                    <h2>📋 Task Pool</h2>
+                    <div class="task-pool" id="taskPool"></div>
+                </div>
+            </div>
+
+            <!-- Calendar Section -->
+            <div class="calendar-section">
+                <div class="calendar-grid" id="calendar"></div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Year View Modal -->
+    <div class="year-view-modal" id="yearViewModal" style="display: none;">
+        <div class="year-view-container">
+            <div class="year-view-header">
+                <h2><span id="yearViewYear">2026</span> Weekly Overview</h2>
+                <button class="close-modal-btn" id="closeYearViewBtn">✕</button>
+            </div>
+            <div class="year-view-grid" id="yearViewGrid">
+                <!-- Week cards will be generated here -->
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Data Management
+        let weekData = {}; // New nested structure: { year: { weekNum: [tasks] } }
+        let currentViewWeek = null;
+        let currentViewYear = null;
+        const STORAGE_KEY = 'weeklyPlannerData'; // Old key for migration
+        const STORAGE_KEY_V2 = 'weeklyPlannerData_v2'; // New key
+        const PANEL_STATE_KEY = 'weeklyPlannerPanelCollapsed';
+        const DAYS = ['monday', 'tuesday', 'wednesday', 'thursday', 'friday'];
+        const DAY_NAMES = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday'];
+
+        const CATEGORIES = {
+            meetings: { name: 'Meetings', color: '#3B82F6' },
+            planning: { name: 'Planning', color: '#8B5CF6' },
+            expo: { name: 'Expo', color: '#F97316' },
+            development: { name: 'Development', color: '#10B981' },
+            other: { name: 'Other', color: '#6B7280' }
+        };
+
+        // Initialize App
+        function init() {
+            loadData();
+
+            // Set current week as default view
+            currentViewWeek = getCurrentWeekNumber();
+            currentViewYear = new Date().getFullYear();
+
+            restorePanelState();
+            renderCalendar();
+            renderTaskPool();
+            updateTopBarStats();
+            updateWeekDisplay();
+            setupEventListeners();
+
+            // Populate week dropdown
+            populateWeekDropdown();
+        }
+
+        // Get Current Week Number
+        function getCurrentWeekNumber() {
+            return getWeekNumber(new Date());
+        }
+
+        // Get tasks for a specific week
+        function getWeekTasks(year, weekNum) {
+            return weekData[year]?.[weekNum] || [];
+        }
+
+        // Migrate old data to new format
+        function migrateToV2() {
+            const oldData = localStorage.getItem(STORAGE_KEY);
+            if (!oldData) return {};
+
+            try {
+                const oldTasks = JSON.parse(oldData);
+                const currentYear = new Date().getFullYear();
+                const currentWeek = getCurrentWeekNumber();
+
+                // Create new structure
+                const newData = {
+                    [currentYear]: {
+                        [currentWeek]: oldTasks.map(task => ({
+                            ...task,
+                            weekNumber: currentWeek,
+                            year: currentYear
+                        }))
+                    }
+                };
+
+                return newData;
+            } catch (e) {
+                console.error('Migration failed:', e);
+                return {};
+            }
+        }
+
+        // Load data from localStorage
+        function loadData() {
+            // Try v2 format first
+            const v2Data = localStorage.getItem(STORAGE_KEY_V2);
+            if (v2Data) {
+                try {
+                    weekData = JSON.parse(v2Data);
+                    return;
+                } catch (e) {
+                    console.error('Error loading v2 data:', e);
+                }
+            }
+
+            // Migrate from v1
+            weekData = migrateToV2();
+            if (Object.keys(weekData).length > 0) {
+                saveData(); // Save migrated data
+            }
+        }
+
+        // Save data to localStorage
+        function saveData() {
+            localStorage.setItem(STORAGE_KEY_V2, JSON.stringify(weekData));
+        }
+
+        // Restore panel collapsed state
+        function restorePanelState() {
+            const collapsed = localStorage.getItem(PANEL_STATE_KEY);
+            if (collapsed === 'true') {
+                document.getElementById('mainContent').classList.add('collapsed');
+            }
+        }
+
+        // Toggle Left Panel
+        function toggleLeftPanel() {
+            const mainContent = document.getElementById('mainContent');
+            mainContent.classList.toggle('collapsed');
+
+            // Save state
+            const isCollapsed = mainContent.classList.contains('collapsed');
+            localStorage.setItem(PANEL_STATE_KEY, isCollapsed);
+        }
+
+        // Setup Event Listeners
+        function setupEventListeners() {
+            document.getElementById('taskForm').addEventListener('submit', handleTaskSubmit);
+            document.getElementById('hamburgerBtn').addEventListener('click', toggleLeftPanel);
+
+            // Week navigation
+            document.getElementById('prevWeekBtn').addEventListener('click', goToPreviousWeek);
+            document.getElementById('nextWeekBtn').addEventListener('click', goToNextWeek);
+            document.getElementById('weekDropdown').addEventListener('change', (e) => {
+                navigateToWeek(currentViewYear, parseInt(e.target.value));
+            });
+
+            // Click week text to show dropdown
+            document.getElementById('weekInfoText').addEventListener('click', () => {
+                document.getElementById('weekDropdown').click();
+            });
+
+            // Year view
+            document.getElementById('yearViewBtn').addEventListener('click', openYearView);
+            document.getElementById('closeYearViewBtn').addEventListener('click', closeYearView);
+
+            // Close year view on background click
+            document.getElementById('yearViewModal').addEventListener('click', (e) => {
+                if (e.target.id === 'yearViewModal') {
+                    closeYearView();
+                }
+            });
+
+            // Keyboard shortcuts
+            document.addEventListener('keydown', (e) => {
+                // ESC to close modal
+                if (e.key === 'Escape') {
+                    const modal = document.getElementById('yearViewModal');
+                    if (modal.style.display !== 'none') {
+                        closeYearView();
+                    }
+                }
+
+                // Arrow keys for week navigation (only when not in input)
+                if (!e.target.matches('input, textarea, select')) {
+                    if (e.key === 'ArrowLeft') {
+                        goToPreviousWeek();
+                    }
+                    if (e.key === 'ArrowRight') {
+                        goToNextWeek();
+                    }
+                }
+            });
+
+            // Update category select color
+            const categorySelect = document.getElementById('taskCategory');
+            categorySelect.addEventListener('change', updateCategorySelectColor);
+            updateCategorySelectColor(); // Initial color
+        }
+
+        // Update Category Select Color
+        function updateCategorySelectColor() {
+            const categorySelect = document.getElementById('taskCategory');
+            const selectedCategory = categorySelect.value;
+            const color = CATEGORIES[selectedCategory].color;
+
+            // Update the color of the bullet point
+            categorySelect.style.color = color;
+        }
+
+        // Handle Task Form Submit
+        function handleTaskSubmit(e) {
+            e.preventDefault();
+
+            const task = {
+                id: Date.now(),
+                title: document.getElementById('taskTitle').value.trim(),
+                category: document.getElementById('taskCategory').value,
+                effort: parseInt(document.getElementById('taskEffort').value),
+                priority: document.getElementById('taskPriority').value,
+                description: document.getElementById('taskDescription').value.trim(),
+                assignedDay: null,
+                weekNumber: currentViewWeek,  // Add to current viewing week
+                year: currentViewYear,         // Add current year
+                createdAt: Date.now()
+            };
+
+            // Add to data structure
+            if (!weekData[currentViewYear]) weekData[currentViewYear] = {};
+            if (!weekData[currentViewYear][currentViewWeek]) weekData[currentViewYear][currentViewWeek] = [];
+            weekData[currentViewYear][currentViewWeek].push(task);
+
+            saveData();
+
+            // Reset form
+            e.target.reset();
+
+            // Re-render
+            renderTaskPool();
+            updateTopBarStats();
+            updateCategorySelectColor(); // Reset color after form reset
+        }
+
+        // Render Calendar
+        function renderCalendar() {
+            const calendar = document.getElementById('calendar');
+            calendar.innerHTML = '';
+
+            const weekTasks = getWeekTasks(currentViewYear, currentViewWeek);
+
+            DAYS.forEach((day, index) => {
+                const dayColumn = document.createElement('div');
+                dayColumn.className = 'day-column';
+                dayColumn.dataset.day = day;
+
+                // Calculate actual date for this day in viewing week
+                const dayDate = getDateForDayInWeek(currentViewYear, currentViewWeek, index);
+
+                const dayHeader = document.createElement('div');
+                dayHeader.className = 'day-header';
+
+                const dayName = document.createElement('div');
+                dayName.className = 'day-name';
+                dayName.textContent = DAY_NAMES[index];
+
+                const dayDateDisplay = document.createElement('div');
+                dayDateDisplay.className = 'day-date';
+                dayDateDisplay.textContent = formatDate(dayDate);
+
+                const dayTotal = document.createElement('div');
+                dayTotal.className = 'day-total';
+                dayTotal.id = `day-total-${day}`;
+
+                dayHeader.appendChild(dayName);
+                dayHeader.appendChild(dayDateDisplay);
+                dayHeader.appendChild(dayTotal);
+
+                const dayTasks = document.createElement('div');
+                dayTasks.className = 'day-tasks';
+                dayTasks.id = `day-${day}`;
+
+                dayColumn.appendChild(dayHeader);
+                dayColumn.appendChild(dayTasks);
+
+                // Drop zone events
+                dayColumn.addEventListener('dragover', handleDragOver);
+                dayColumn.addEventListener('drop', handleDrop);
+                dayColumn.addEventListener('dragleave', handleDragLeave);
+
+                calendar.appendChild(dayColumn);
+            });
+
+            // Render tasks for this specific week
+            weekTasks.forEach(task => {
+                if (task.assignedDay) {
+                    renderTaskInDay(task, task.assignedDay);
+                }
+            });
+
+            updateDayTotals();
+        }
+
+        // Render Task Pool
+        function renderTaskPool() {
+            const taskPool = document.getElementById('taskPool');
+            const weekTasks = getWeekTasks(currentViewYear, currentViewWeek);
+            const unassignedTasks = weekTasks.filter(t => !t.assignedDay);
+
+            if (unassignedTasks.length === 0) {
+                taskPool.innerHTML = `
+                    <div class="empty-state">
+                        <div class="empty-state-icon">📋</div>
+                        <div class="empty-state-text">No tasks in pool.<br>Create a task to get started!</div>
+                    </div>
+                `;
+                return;
+            }
+
+            taskPool.innerHTML = '';
+            unassignedTasks.forEach(task => {
+                const taskCard = createTaskCard(task);
+                taskPool.appendChild(taskCard);
+            });
+        }
+
+        // Create Task Card Element - NEW VERSION
+        function createTaskCard(task) {
+            const card = document.createElement('div');
+            card.className = `task-card category-${task.category}`;
+            card.draggable = true;
+            card.dataset.taskId = task.id;
+
+            // Title with priority icon
+            const title = document.createElement('div');
+            title.className = 'task-title editable';
+            title.dataset.field = 'title';
+            title.title = 'Double-click to edit';
+
+            const titleText = document.createTextNode(task.title);
+            title.appendChild(titleText);
+
+            // Priority icon
+            if (task.priority === 'high') {
+                const priorityIcon = document.createElement('span');
+                priorityIcon.className = 'task-priority-icon';
+                priorityIcon.textContent = '⚡';
+                priorityIcon.title = 'High Priority';
+                title.appendChild(priorityIcon);
+            } else if (task.priority === 'done') {
+                const priorityIcon = document.createElement('span');
+                priorityIcon.className = 'task-priority-icon';
+                priorityIcon.textContent = '✓';
+                priorityIcon.style.color = '#34c759';
+                priorityIcon.title = 'Completed';
+                title.appendChild(priorityIcon);
+            }
+
+            // Add double-click to edit title
+            title.addEventListener('dblclick', (e) => {
+                e.stopPropagation();
+                editTaskField(task.id, 'title', title);
+            });
+
+            // Meta (category + hours)
+            const meta = document.createElement('div');
+            meta.className = 'task-meta';
+            meta.textContent = `${CATEGORIES[task.category].name} • ${task.effort}h`;
+
+            card.appendChild(title);
+            card.appendChild(meta);
+
+            // Notes - ALWAYS VISIBLE if present, or show placeholder
+            const notes = document.createElement('div');
+            notes.className = 'task-notes editable';
+            notes.dataset.field = 'description';
+            notes.title = 'Double-click to edit notes';
+
+            if (task.description) {
+                notes.textContent = task.description;
+            } else {
+                notes.textContent = '(No notes - double-click to add)';
+                notes.style.fontStyle = 'italic';
+                notes.style.opacity = '0.5';
+            }
+
+            // Add double-click to edit notes
+            notes.addEventListener('dblclick', (e) => {
+                e.stopPropagation();
+                editTaskField(task.id, 'description', notes);
+            });
+
+            card.appendChild(notes);
+
+            // Action buttons
+            const actions = document.createElement('div');
+            actions.className = 'task-actions';
+
+            const editBtn = document.createElement('button');
+            editBtn.className = 'task-action-btn task-edit-btn';
+            editBtn.innerHTML = '✎';
+            editBtn.title = 'Edit task';
+            editBtn.onclick = (e) => {
+                e.stopPropagation();
+                editTaskField(task.id, 'title', title);
+            };
+
+            const deleteBtn = document.createElement('button');
+            deleteBtn.className = 'task-action-btn task-delete-btn';
+            deleteBtn.innerHTML = '×';
+            deleteBtn.title = 'Delete task';
+            deleteBtn.onclick = (e) => {
+                e.stopPropagation();
+                deleteTask(task.id);
+            };
+
+            actions.appendChild(editBtn);
+            actions.appendChild(deleteBtn);
+            card.appendChild(actions);
+
+            // Drag events
+            card.addEventListener('dragstart', handleDragStart);
+            card.addEventListener('dragend', handleDragEnd);
+
+            return card;
+        }
+
+        // Edit Task Field (Inline Editing)
+        function editTaskField(taskId, field, element) {
+            // Find the task
+            const weekTasks = getWeekTasks(currentViewYear, currentViewWeek);
+            const task = weekTasks.find(t => t.id === taskId);
+            if (!task) return;
+
+            const originalValue = task[field] || '';
+            const isTitle = field === 'title';
+
+            // Create input element
+            const input = isTitle
+                ? document.createElement('input')
+                : document.createElement('textarea');
+
+            input.className = isTitle ? 'task-title-input' : 'task-notes-input';
+            input.value = originalValue;
+
+            // Replace element content
+            element.innerHTML = '';
+            element.appendChild(input);
+
+            // Add hint for notes
+            if (!isTitle) {
+                const hint = document.createElement('div');
+                hint.className = 'task-edit-hint';
+                hint.textContent = 'Press Enter to save, Esc to cancel';
+                element.appendChild(hint);
+            }
+
+            // Focus and select
+            input.focus();
+            if (isTitle) {
+                input.select();
+            }
+
+            // Save function
+            const saveEdit = () => {
+                const newValue = input.value.trim();
+
+                if (newValue && newValue !== originalValue) {
+                    task[field] = newValue;
+                    saveData();
+                    renderCalendar();
+                    renderTaskPool();
+                } else if (!newValue && field === 'title') {
+                    // Don't allow empty title - restore original
+                    alert('Task title cannot be empty');
+                    renderCalendar();
+                    renderTaskPool();
+                } else {
+                    // Restore original or clear notes
+                    if (field === 'description') {
+                        task[field] = '';
+                        saveData();
+                    }
+                    renderCalendar();
+                    renderTaskPool();
+                }
+            };
+
+            // Cancel function
+            const cancelEdit = () => {
+                renderCalendar();
+                renderTaskPool();
+            };
+
+            // Event listeners
+            if (isTitle) {
+                // For title: Enter to save, Esc to cancel
+                input.addEventListener('keydown', (e) => {
+                    if (e.key === 'Enter') {
+                        e.preventDefault();
+                        saveEdit();
+                    } else if (e.key === 'Escape') {
+                        e.preventDefault();
+                        cancelEdit();
+                    }
+                });
+            } else {
+                // For notes: Ctrl+Enter or Cmd+Enter to save, Esc to cancel
+                input.addEventListener('keydown', (e) => {
+                    if (e.key === 'Enter' && (e.ctrlKey || e.metaKey)) {
+                        e.preventDefault();
+                        saveEdit();
+                    } else if (e.key === 'Escape') {
+                        e.preventDefault();
+                        cancelEdit();
+                    }
+                });
+            }
+
+            // Save on blur (clicking outside)
+            input.addEventListener('blur', saveEdit);
+        }
+
+        // Render Task in Day
+        function renderTaskInDay(task, day) {
+            const dayContainer = document.getElementById(`day-${day}`);
+            if (dayContainer) {
+                const taskCard = createTaskCard(task);
+                dayContainer.appendChild(taskCard);
+            }
+        }
+
+        // Drag and Drop Handlers
+        let draggedTaskId = null;
+
+        function handleDragStart(e) {
+            draggedTaskId = e.target.dataset.taskId;
+            e.target.classList.add('dragging');
+            e.dataTransfer.effectAllowed = 'move';
+        }
+
+        function handleDragEnd(e) {
+            e.target.classList.remove('dragging');
+            document.querySelectorAll('.day-column').forEach(col => {
+                col.classList.remove('drag-over');
+            });
+        }
+
+        function handleDragOver(e) {
+            e.preventDefault();
+            e.dataTransfer.dropEffect = 'move';
+            const dayColumn = e.currentTarget;
+            dayColumn.classList.add('drag-over');
+        }
+
+        function handleDragLeave(e) {
+            const dayColumn = e.currentTarget;
+            if (!dayColumn.contains(e.relatedTarget)) {
+                dayColumn.classList.remove('drag-over');
+            }
+        }
+
+        function handleDrop(e) {
+            e.preventDefault();
+            const dayColumn = e.currentTarget;
+            dayColumn.classList.remove('drag-over');
+
+            const day = dayColumn.dataset.day;
+            const taskId = parseInt(draggedTaskId);
+
+            // Find task in current week
+            const weekTasks = getWeekTasks(currentViewYear, currentViewWeek);
+            const task = weekTasks.find(t => t.id === taskId);
+
+            if (task) {
+                task.assignedDay = day;
+                saveData();
+                renderCalendar();
+                renderTaskPool();
+                updateTopBarStats();
+            }
+        }
+
+        // Delete Task
+        function deleteTask(taskId) {
+            if (confirm('Are you sure you want to delete this task?')) {
+                // Remove from current week
+                if (weekData[currentViewYear] && weekData[currentViewYear][currentViewWeek]) {
+                    weekData[currentViewYear][currentViewWeek] =
+                        weekData[currentViewYear][currentViewWeek].filter(t => t.id !== taskId);
+                }
+                saveData();
+                renderCalendar();
+                renderTaskPool();
+                updateTopBarStats();
+            }
+        }
+
+        // Update Day Totals
+        function updateDayTotals() {
+            const weekTasks = getWeekTasks(currentViewYear, currentViewWeek);
+            DAYS.forEach(day => {
+                const dayTasks = weekTasks.filter(t => t.assignedDay === day);
+                const totalHours = dayTasks.reduce((sum, t) => sum + t.effort, 0);
+
+                const totalElement = document.getElementById(`day-total-${day}`);
+                if (totalElement) {
+                    totalElement.textContent = `${totalHours}h`;
+                    totalElement.className = 'day-total';
+
+                    if (totalHours > 8) {
+                        totalElement.classList.add('danger');
+                    } else if (totalHours === 8) {
+                        totalElement.classList.add('warning');
+                    }
+                }
+            });
+        }
+
+        // Update Top Bar Stats
+        function updateTopBarStats() {
+            const weekTasks = getWeekTasks(currentViewYear, currentViewWeek);
+
+            // Total hours
+            const totalHours = weekTasks.reduce((sum, t) => sum + t.effort, 0);
+            document.getElementById('topBarHours').textContent = `${totalHours}h`;
+
+            // Progress percentage
+            const totalTaskCount = weekTasks.length;
+            const completedTaskCount = weekTasks.filter(t => t.priority === 'done').length;
+            const progressPercent = totalTaskCount > 0 ? Math.round((completedTaskCount / totalTaskCount) * 100) : 0;
+            document.getElementById('topBarProgress').textContent = `${progressPercent}%`;
+        }
+
+        // Get Week Number
+        function getWeekNumber(date) {
+            const d = new Date(Date.UTC(date.getFullYear(), date.getMonth(), date.getDate()));
+            const dayNum = d.getUTCDay() || 7;
+            d.setUTCDate(d.getUTCDate() + 4 - dayNum);
+            const yearStart = new Date(Date.UTC(d.getUTCFullYear(), 0, 1));
+            return Math.ceil((((d - yearStart) / 86400000) + 1) / 7);
+        }
+
+        // Get the Monday date for a specific year and week number
+        function getMondayOfWeek(year, weekNum) {
+            const jan4 = new Date(year, 0, 4);
+            const jan4Day = jan4.getDay() || 7;
+            const mondayOfWeek1 = new Date(jan4);
+            mondayOfWeek1.setDate(jan4.getDate() - jan4Day + 1);
+
+            const targetMonday = new Date(mondayOfWeek1);
+            targetMonday.setDate(mondayOfWeek1.getDate() + (weekNum - 1) * 7);
+
+            return targetMonday;
+        }
+
+        // Get date for specific day index in a week
+        function getDateForDayInWeek(year, weekNum, dayIndex) {
+            const monday = getMondayOfWeek(year, weekNum);
+            const date = new Date(monday);
+            date.setDate(monday.getDate() + dayIndex);
+            return date;
+        }
+
+        // Format date as M/D
+        function formatDate(date) {
+            return `${date.getMonth() + 1}/${date.getDate()}`;
+        }
+
+        // Get Monday of Current Week
+        function getMonday(date) {
+            const d = new Date(date);
+            const day = d.getDay();
+            const diff = d.getDate() - day + (day === 0 ? -6 : 1);
+            return new Date(d.setDate(diff));
+        }
+
+        // Get Date for Day (legacy function - kept for compatibility)
+        function getDateForDay(dayIndex) {
+            const monday = getMonday(new Date());
+            const date = new Date(monday);
+            date.setDate(monday.getDate() + dayIndex);
+            return `${date.getMonth() + 1}/${date.getDate()}`;
+        }
+
+        // Update Week Display
+        function updateWeekDisplay() {
+            const monday = getMondayOfWeek(currentViewYear, currentViewWeek);
+            const friday = new Date(monday);
+            friday.setDate(monday.getDate() + 4);
+
+            document.getElementById('topBarWeekNumber').textContent = currentViewWeek;
+
+            const monthNames = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+            const mondayStr = `${monthNames[monday.getMonth()]} ${monday.getDate()}`;
+            const fridayStr = `${monthNames[friday.getMonth()]} ${friday.getDate()}, ${friday.getFullYear()}`;
+
+            document.getElementById('topBarWeekRange').textContent = `• ${mondayStr} - ${fridayStr}`;
+
+            // Indicate if viewing past/future week
+            const currentActualWeek = getCurrentWeekNumber();
+            const weekInfoText = document.getElementById('weekInfoText');
+            if (currentViewWeek !== currentActualWeek || currentViewYear !== new Date().getFullYear()) {
+                weekInfoText.style.color = '#0071e3';
+            } else {
+                weekInfoText.style.color = '';
+            }
+        }
+
+        // Populate week dropdown
+        function populateWeekDropdown() {
+            const dropdown = document.getElementById('weekDropdown');
+            dropdown.innerHTML = '';
+            for (let i = 1; i <= 52; i++) {
+                const option = document.createElement('option');
+                option.value = i;
+                option.textContent = `Week ${i}`;
+                dropdown.appendChild(option);
+            }
+            dropdown.value = currentViewWeek;
+        }
+
+        // Navigation Functions
+        function navigateToWeek(year, weekNum) {
+            // Validate week number
+            if (weekNum < 1) weekNum = 1;
+            if (weekNum > 52) weekNum = 52;
+
+            currentViewYear = year;
+            currentViewWeek = weekNum;
+
+            // Re-render everything for new week
+            renderCalendar();
+            renderTaskPool();
+            updateWeekDisplay();
+            updateTopBarStats();
+            updateNavigationButtons();
+        }
+
+        function goToPreviousWeek() {
+            let newWeek = currentViewWeek - 1;
+            let newYear = currentViewYear;
+
+            if (newWeek < 1) {
+                newWeek = 52;
+                newYear--;
+            }
+
+            navigateToWeek(newYear, newWeek);
+        }
+
+        function goToNextWeek() {
+            let newWeek = currentViewWeek + 1;
+            let newYear = currentViewYear;
+
+            if (newWeek > 52) {
+                newWeek = 1;
+                newYear++;
+            }
+
+            navigateToWeek(newYear, newWeek);
+        }
+
+        function updateNavigationButtons() {
+            // Update dropdown selection
+            document.getElementById('weekDropdown').value = currentViewWeek;
+        }
+
+        // Year View Functions
+        function openYearView() {
+            const modal = document.getElementById('yearViewModal');
+            const grid = document.getElementById('yearViewGrid');
+            document.getElementById('yearViewYear').textContent = currentViewYear;
+
+            // Generate all 52 week cards
+            grid.innerHTML = '';
+            for (let week = 1; week <= 52; week++) {
+                const card = createWeekCard(currentViewYear, week);
+                grid.appendChild(card);
+            }
+
+            modal.style.display = 'flex';
+            document.body.style.overflow = 'hidden'; // Prevent background scroll
+        }
+
+        function closeYearView() {
+            const modal = document.getElementById('yearViewModal');
+            modal.style.display = 'none';
+            document.body.style.overflow = '';
+        }
+
+        function createWeekCard(year, weekNum) {
+            const card = document.createElement('div');
+            card.className = 'week-card';
+
+            const weekTasks = getWeekTasks(year, weekNum);
+            const totalHours = weekTasks.reduce((sum, t) => sum + t.effort, 0);
+            const completedCount = weekTasks.filter(t => t.priority === 'done').length;
+            const totalCount = weekTasks.length;
+            const progress = totalCount > 0 ? Math.round((completedCount / totalCount) * 100) : 0;
+
+            // Styling based on state
+            const currentActualWeek = getCurrentWeekNumber();
+            if (weekNum === currentViewWeek && year === currentViewYear) {
+                card.classList.add('current-week');
+            } else if (totalCount === 0) {
+                card.classList.add('empty');
+            } else if (progress === 100) {
+                card.classList.add('completed');
+            }
+
+            // Content
+            const weekNumber = document.createElement('div');
+            weekNumber.className = 'week-card-number';
+            weekNumber.textContent = `W${weekNum}`;
+
+            if (totalCount > 0) {
+                const hours = document.createElement('div');
+                hours.className = 'week-card-hours';
+                hours.textContent = `${totalHours}h`;
+
+                const progressDiv = document.createElement('div');
+                progressDiv.className = 'week-card-progress';
+                progressDiv.textContent = `${progress}%`;
+
+                card.appendChild(weekNumber);
+                card.appendChild(hours);
+                card.appendChild(progressDiv);
+            } else {
+                card.appendChild(weekNumber);
+            }
+
+            // Click to navigate
+            card.addEventListener('click', () => {
+                closeYearView();
+                navigateToWeek(year, weekNum);
+            });
+
+            return card;
+        }
+
+        // Initialize on page load
+        init();
+    </script>
+</body>
+</html>

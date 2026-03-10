@@ -1,0 +1,38 @@
+═══════════════════════════════════════════════════════════════════
+🚀 QUICK START - Deploy in 5 Minutes!
+═══════════════════════════════════════════════════════════════════
+
+FASTEST WAY (Using Script):
+
+1. Open Terminal
+2. Copy & paste this:
+
+   cd /Users/I772414/weekly-planner-deploy && ./deploy.sh
+
+3. Follow the prompts (enter username, email, repo URL)
+4. Done! Your site will be live at:
+   https://YOUR_USERNAME.github.io/weekly-planner/
+
+═══════════════════════════════════════════════════════════════════
+
+WHAT YOU NEED:
+✅ GitHub account (free - sign up at github.com)
+✅ 5 minutes of time
+✅ Your GitHub username & email
+
+═══════════════════════════════════════════════════════════════════
+
+AFTER DEPLOYMENT:
+📤 Share URL with anyone
+🔖 Bookmark for daily use
+💾 All user data stays private
+🆓 Free hosting forever
+
+═══════════════════════════════════════════════════════════════════
+
+NEED HELP?
+📖 Read: DEPLOYMENT.md (detailed guide)
+📖 Read: README.md (features & usage)
+🆘 Stuck? Check troubleshooting in DEPLOYMENT.md
+
+═══════════════════════════════════════════════════════════════════
