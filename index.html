@@ -503,6 +503,80 @@
             font-size: 11px;
             color: #86868b;
             margin-bottom: 8px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            flex-wrap: wrap;
+        }
+
+        .task-effort {
+            cursor: pointer;
+            padding: 2px 6px;
+            border-radius: 4px;
+            transition: background 0.2s;
+            font-weight: 600;
+        }
+
+        .task-effort:hover {
+            background: #f5f5f7;
+        }
+
+        .task-effort-input {
+            width: 50px;
+            border: 2px solid #0071e3;
+            border-radius: 4px;
+            padding: 2px 6px;
+            font-size: 11px;
+            font-weight: 600;
+            font-family: inherit;
+            outline: none;
+        }
+
+        /* Completed Task Styling */
+        .task-card.completed {
+            opacity: 0.6;
+            background: #f5f5f7;
+        }
+
+        .task-card.completed .task-title {
+            text-decoration: line-through;
+            color: #86868b;
+        }
+
+        .task-card.completed .task-meta {
+            text-decoration: line-through;
+        }
+
+        /* Done Toggle Button */
+        .task-done-toggle {
+            margin-left: auto;
+            padding: 2px 8px;
+            border-radius: 4px;
+            font-size: 10px;
+            font-weight: 600;
+            border: 1px solid #d2d2d7;
+            background: white;
+            cursor: pointer;
+            transition: all 0.2s;
+            display: flex;
+            align-items: center;
+            gap: 3px;
+        }
+
+        .task-done-toggle:hover {
+            background: #f5f5f7;
+            border-color: #10B981;
+        }
+
+        .task-done-toggle.is-done {
+            background: #10B981;
+            border-color: #10B981;
+            color: white;
+        }
+
+        .task-done-toggle.is-done:hover {
+            background: #059669;
+            border-color: #059669;
         }
 
         /* Task Notes - ALWAYS VISIBLE */
@@ -1230,6 +1304,12 @@
         function createTaskCard(task) {
             const card = document.createElement('div');
             card.className = `task-card category-${task.category}`;
+
+            // Add completed class if task is done
+            if (task.priority === 'done') {
+                card.classList.add('completed');
+            }
+
             card.draggable = true;
             card.dataset.taskId = task.id;
 
@@ -1264,10 +1344,45 @@
                 editTaskField(task.id, 'title', title);
             });
 
-            // Meta (category + hours)
+            // Meta (category + editable hours + done toggle)
             const meta = document.createElement('div');
             meta.className = 'task-meta';
-            meta.textContent = `${CATEGORIES[task.category].name} • ${task.effort}h`;
+
+            // Category text
+            const categoryText = document.createElement('span');
+            categoryText.textContent = CATEGORIES[task.category].name;
+            meta.appendChild(categoryText);
+
+            // Separator
+            const separator = document.createElement('span');
+            separator.textContent = '•';
+            meta.appendChild(separator);
+
+            // Editable effort/hours
+            const effortSpan = document.createElement('span');
+            effortSpan.className = 'task-effort';
+            effortSpan.textContent = `${task.effort}h`;
+            effortSpan.title = 'Click to edit hours';
+            effortSpan.addEventListener('click', (e) => {
+                e.stopPropagation();
+                editTaskEffort(task.id, effortSpan);
+            });
+            meta.appendChild(effortSpan);
+
+            // Done toggle button
+            const doneToggle = document.createElement('button');
+            doneToggle.className = 'task-done-toggle';
+            if (task.priority === 'done') {
+                doneToggle.classList.add('is-done');
+                doneToggle.innerHTML = '✓';
+            } else {
+                doneToggle.innerHTML = 'Done';
+            }
+            doneToggle.onclick = (e) => {
+                e.stopPropagation();
+                toggleTaskDone(task.id);
+            };
+            meta.appendChild(doneToggle);
 
             card.appendChild(title);
             card.appendChild(meta);
@@ -1325,6 +1440,74 @@
             card.addEventListener('dragend', handleDragEnd);
 
             return card;
+        }
+
+        // Toggle Task Done Status
+        function toggleTaskDone(taskId) {
+            const weekTasks = getWeekTasks(currentViewYear, currentViewWeek);
+            const task = weekTasks.find(t => t.id === taskId);
+            if (!task) return;
+
+            // Toggle between 'done' and 'normal'
+            if (task.priority === 'done') {
+                task.priority = 'normal';
+            } else {
+                task.priority = 'done';
+            }
+
+            saveData();
+            renderCalendar();
+            renderTaskPool();
+            updateTopBarStats();
+        }
+
+        // Edit Task Effort (Hours)
+        function editTaskEffort(taskId, element) {
+            const weekTasks = getWeekTasks(currentViewYear, currentViewWeek);
+            const task = weekTasks.find(t => t.id === taskId);
+            if (!task) return;
+
+            const originalValue = task.effort;
+
+            // Create input
+            const input = document.createElement('input');
+            input.type = 'number';
+            input.className = 'task-effort-input';
+            input.value = originalValue;
+            input.min = '1';
+            input.max = '24';
+            input.style.width = '50px';
+
+            // Replace element
+            element.replaceWith(input);
+            input.focus();
+            input.select();
+
+            // Save function
+            const saveEdit = () => {
+                const newValue = parseInt(input.value);
+                if (newValue && newValue > 0 && newValue <= 24) {
+                    task.effort = newValue;
+                    saveData();
+                }
+                renderCalendar();
+                renderTaskPool();
+                updateTopBarStats();
+            };
+
+            // Event listeners
+            input.addEventListener('keydown', (e) => {
+                if (e.key === 'Enter') {
+                    e.preventDefault();
+                    saveEdit();
+                } else if (e.key === 'Escape') {
+                    e.preventDefault();
+                    renderCalendar();
+                    renderTaskPool();
+                }
+            });
+
+            input.addEventListener('blur', saveEdit);
         }
 
         // Edit Task Field (Inline Editing)
